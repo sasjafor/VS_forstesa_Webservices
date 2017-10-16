@@ -1,4 +1,4 @@
-package ch.ethz.inf.vs.a2.sensor;
+/*package ch.ethz.inf.vs.a2.sensor;
 
 import ch.ethz.inf.vs.a2.solution.sensor.TextSensor;
 import ch.ethz.inf.vs.a2.solution.sensor.JsonSensor;
@@ -29,8 +29,9 @@ public abstract class SensorFactory {
 			return null;
 		}
 	}
-	
+
 	public enum Type {
 		RAW_HTTP, TEXT, JSON, XML, SOAP;
 	}
 }
+*/

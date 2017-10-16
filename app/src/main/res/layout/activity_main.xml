@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,24 +8,30 @@
 
     <Button
         android:id="@+id/button_rest_client"
-        android:layout_width="match_parent"
+        android:layout_width="88dp"
         android:layout_height="wrap_content"
         android:text="@string/button1_text"
-        android:onClick="onClickRestClient"/>
+        android:onClick="onClickRestClient"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="8dp" />
 
     <Button
         android:id="@+id/button_soap_client"
-        android:layout_width="match_parent"
+        android:layout_width="88dp"
         android:layout_height="wrap_content"
         android:text="@string/button2_text"
-        android:onClick="onClickSoapClient"/>
+        android:onClick="onClickSoapClient"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="8dp" />
 
     <Button
         android:id="@+id/button_rest_server"
-        android:layout_width="match_parent"
+        android:layout_width="88dp"
         android:layout_height="wrap_content"
         android:text="@string/button3_text"
-        android:onClick="onClickRestServer"/>
+        android:onClick="onClickRestServer"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="8dp" />
 
 
-</android.support.constraint.ConstraintLayout>
+</LinearLayout>

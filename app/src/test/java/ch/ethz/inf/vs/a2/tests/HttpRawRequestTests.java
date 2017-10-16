@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ch.ethz.inf.vs.a2.http.HttpRawRequest;
-import ch.ethz.inf.vs.a2.solution.http.HttpRawRequestImpl;
+import ch.ethz.inf.vs.a2.http.HttpRawRequestImpl;
 
 
 public class HttpRawRequestTests{
