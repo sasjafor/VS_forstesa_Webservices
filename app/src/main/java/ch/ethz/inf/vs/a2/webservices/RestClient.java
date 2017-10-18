@@ -20,11 +20,13 @@ public class RestClient extends AppCompatActivity implements SensorListener {
 
         //TODO: replace constructors with factory constructors when project finished
 
+        Resources res = getResources();
         temp_val = (TextView) findViewById(R.id.temperature);
+        temp_val.setText(res.getString(R.string.temperature,0.0));
 
-        RawHttpSensor raw_sensor = new RawHttpSensor();
-        TextSensor text_sensor = new TextSensor();
-        JsonSensor json_sensor = new JsonSensor();
+        raw_sensor = new RawHttpSensor();
+        text_sensor = new TextSensor();
+        json_sensor = new JsonSensor();
 
         raw_sensor.registerListener(this);
         text_sensor.registerListener(this);
