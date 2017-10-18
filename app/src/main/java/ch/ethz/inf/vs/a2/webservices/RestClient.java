@@ -1,7 +1,9 @@
 package ch.ethz.inf.vs.a2.webservices;
 
+import android.content.res.Resources;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 
 import ch.ethz.inf.vs.a2.sensor.JsonSensor;
@@ -9,7 +11,7 @@ import ch.ethz.inf.vs.a2.sensor.RawHttpSensor;
 import ch.ethz.inf.vs.a2.sensor.SensorListener;
 import ch.ethz.inf.vs.a2.sensor.TextSensor;
 
-public class RestClient extends AppCompatActivity {
+public class RestClient extends AppCompatActivity implements SensorListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,62 +19,43 @@ public class RestClient extends AppCompatActivity {
         setContentView(R.layout.activity_rest_client);
 
         //TODO: replace constructors with factory constructors when project finished
-        // For each version show the temperature value
-        temp_val_raw = (TextView) findViewById(R.id.temp_val_raw);
-        temp_val_url = (TextView) findViewById(R.id.temp_val_url);
-        temp_val_json = (TextView) findViewById(R.id.temp_val_json);
 
-        // RawHttpSensor version
+        temp_val = (TextView) findViewById(R.id.temperature);
+
         RawHttpSensor raw_sensor = new RawHttpSensor();
-        raw_sensor.registerListener(new SensorListener() {
-
-            @Override
-            public void onReceiveSensorValue(double value) {
-                String temp = Double.toString(value);
-                RestClient.this.temp_val_raw.setText(temp);
-            }
-
-            @Override
-            public void onReceiveMessage(String message) {
-                System.out.println(message);
-            }
-        });
-        raw_sensor.getTemperature();
-
-        // HttpURLConnection version
         TextSensor text_sensor = new TextSensor();
-        text_sensor.registerListener(new SensorListener() {
-            @Override
-            public void onReceiveSensorValue(double value) {
-                String temp = Double.toString(value);
-                RestClient.this.temp_val_url.setText(temp);
-            }
-
-            @Override
-            public void onReceiveMessage(String message) {
-                System.out.println(message);
-            }
-        });
-        text_sensor.getTemperature();
-
-        // JSON version
         JsonSensor json_sensor = new JsonSensor();
-        json_sensor.registerListener(new SensorListener() {
-            @Override
-            public void onReceiveSensorValue(double value) {
-                String temp = Double.toString(value);
-                RestClient.this.temp_val_json.setText(temp);
-            }
 
-            @Override
-            public void onReceiveMessage(String message) {
-                System.out.println(message);
-            }
-        });
+        raw_sensor.registerListener(this);
+        text_sensor.registerListener(this);
+        json_sensor.registerListener(this);
+    }
+
+    @Override
+    public void onReceiveSensorValue(double value) {
+        Resources res = getResources();
+        temp_val.setText(res.getString(R.string.temperature,value));
+    }
+
+    @Override
+    public void onReceiveMessage(String message) {
+        System.out.println(message);
+    }
+
+    public void onClickRaw(View v) {
+        raw_sensor.getTemperature();
+    }
+
+    public void onClickURL(View v) {
+        text_sensor.getTemperature();
+    }
+
+    public void onClickJSON(View v) {
         json_sensor.getTemperature();
     }
 
-    TextView temp_val_raw;
-    TextView temp_val_url;
-    TextView temp_val_json;
+    RawHttpSensor raw_sensor;
+    TextSensor text_sensor;
+    JsonSensor json_sensor;
+    TextView temp_val;
 }

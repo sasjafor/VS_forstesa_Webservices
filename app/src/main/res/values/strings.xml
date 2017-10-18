@@ -3,5 +3,12 @@
     <string name="button1_text">REST Client</string>
     <string name="button2_text">SOAP Client</string>
     <string name="button3_text">REST Server</string>
-    <string name="temperature">Temperature:</string>
+    <string name="btn_raw_text">Get Temperature using a raw HTTP request</string>
+    <string name="btn_url_text">Get Temperature using a URL connection</string>
+    <string name="btn_json_text">Get Temperatur using JSON</string>
+    <string name="temperature">Temperature: %1$d</string>
+    <string name="rest_server_toggle_button_off_text">Start REST Server</string>
+    <string name="rest_server_toggle_button_on_text">REST Server Running</string>
+    <string name="socket_exception_text">Couldn\'t get network interface information</string>
+    <string name="bind_exception_text">Couldn\'t bind to address</string>
 </resources>

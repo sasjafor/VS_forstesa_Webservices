@@ -21,6 +21,8 @@
         <activity android:name=".RestClient" />
         <activity android:name=".SoapClient" />
         <activity android:name=".RestServer"></activity>
+
+        <service android:name=".RestServerService" />
     </application>
 
 </manifest>
