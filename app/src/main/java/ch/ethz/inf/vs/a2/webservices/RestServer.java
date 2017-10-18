@@ -15,9 +15,6 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Enumeration;
-import java.util.List;
-
-import ch.ethz.inf.vs.a2.webservices.RestServerService.LocalBinder;
 
 import static java.net.NetworkInterface.getByName;
 import static java.net.NetworkInterface.getNetworkInterfaces;
@@ -59,13 +56,15 @@ public class RestServer extends AppCompatActivity {
     public void onClickToggle(View v) {
         ToggleButton tb = (ToggleButton) v;
         if(tb.isChecked()){
-            stopService(intent_service);
+            System.out.println("DEBUG: Start server");
+            //bindService(intent_service,conn,0);
+            startService(intent_service);
         } else {
-            //startService(intent_service);
-            bindService(intent_service,conn,0);
+            stopService(intent_service);
         }
     }
 
+    /*
     private ServiceConnection conn = new ServiceConnection() {
         @Override
         public void onServiceConnected (ComponentName className, IBinder service) {
@@ -77,7 +76,7 @@ public class RestServer extends AppCompatActivity {
             ToggleButton tb = (ToggleButton) findViewById(R.id.btn_toggle_server);
             tb.setEnabled(false);
         }
-    };
+    };*/
 
     private Intent intent_service;
     private Thread server_thread;

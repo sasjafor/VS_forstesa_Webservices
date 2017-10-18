@@ -16,32 +16,55 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.channels.ServerSocketChannel;
+import java.util.Map;
 
 public class RestServerService extends Service {
 
-    /*@Override
-    public int onStartCommand(Intent intent, int flags, int startId){
-        super.onStartCommand(intent, flags, startId);
-
-        return START_STICKY;
-    }*/
-
-    @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
+    public int onStartCommand(final Intent intent, int flags, int startId){
+        Thread t = new Thread("REST_SERVER_SERVICE(" + startId + ")") {
+            @Override
+            public void run() {
+                startThis(intent);
+            }
+        };
+        t.start();
+
+        return START_NOT_STICKY;
+    }
+
+    private void startThis(final Intent intent){
         Bundle extras = intent.getExtras();
         if (extras != null){
             sock_addr = (InetSocketAddress) extras.get("sock_addr");
+            System.out.println("DEBUG: sock_addr"+sock_addr);
         }
         try {
             sock.bind(sock_addr);
-            Socket conn_sock = sock.accept();
-            InputStream in = conn_sock.getInputStream();
-            OutputStream out = conn_sock.getOutputStream();
+            System.out.println("DEBUG : Bound to socket");
 
-            byte b[] = new byte[in.available()];
-            in.read(b);
-            System.out.println("DEBUG: request="+b);
+            while(true) {
+                Socket conn_sock = sock.accept();
+                InputStream request = conn_sock.getInputStream();
+                byte b[] = new byte[request.available()];
+                request.read(b);
+                String payload = new String(b, "UTF-8");
+                System.out.println("DEBUG: request="+payload);
+
+                HttpPayload payload_obj = new HttpPayload(payload);
+                Map<String, String> headers = payload_obj.getHeaderMap();
+
+                String method = payload_obj.getMethod();
+                String uri = payload_obj.getUri();
+
+                System.out.println("DEBUG: method="+method);
+                System.out.println("DEBUG: uri="+uri);
+
+
+                OutputStream out = conn_sock.getOutputStream();
+
+
+            }
 
         } catch (IOException ie){
             Toast toast = new Toast(this);
@@ -49,7 +72,6 @@ public class RestServerService extends Service {
             toast.setDuration(Toast.LENGTH_LONG);
             toast.show();
         }
-        return binder;
     }
 
     @Override
@@ -71,13 +93,12 @@ public class RestServerService extends Service {
         }
     }
 
-    public class LocalBinder extends Binder {
-        RestServerService getService() {
-            return RestServerService.this;
-        }
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
-    private final IBinder binder = new LocalBinder();
     private ServerSocket sock;
     private InetSocketAddress sock_addr;
 }
