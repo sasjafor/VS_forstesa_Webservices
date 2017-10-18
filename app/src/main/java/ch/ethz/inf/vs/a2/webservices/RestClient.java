@@ -34,6 +34,33 @@ public class RestClient extends AppCompatActivity implements SensorListener {
     }
 
     @Override
+    public void onPause(){
+        super.onPause();
+
+        raw_sensor.unregisterListener(this);
+        text_sensor.unregisterListener(this);
+        json_sensor.unregisterListener(this);
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+
+        raw_sensor.registerListener(this);
+        text_sensor.registerListener(this);
+        json_sensor.registerListener(this);
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+
+        raw_sensor.unregisterListener(this);
+        text_sensor.unregisterListener(this);
+        json_sensor.unregisterListener(this);
+    }
+
+    @Override
     public void onReceiveSensorValue(double value) {
         Resources res = getResources();
         temp_val.setText(res.getString(R.string.temperature,value));

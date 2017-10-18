@@ -10,7 +10,8 @@
     <TextView android:id="@+id/temperature"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/temperature"/>
+        android:text="@string/temperature"
+        android:textSize="40sp"/>
 
     <Button android:id="@+id/btn_raw"
         android:layout_width="wrap_content"
