@@ -7,11 +7,16 @@ public class HttpPayload {
 
     public HttpPayload(String payload) {
         String[] split_string = payload.split("\r\n");
+
+        System.out.println("DEBUG: split_string=");
+        for(String s : split_string) {
+            System.out.println(s);
+        }
         method = split_string[0].split(" ")[0];
         uri = split_string[0].split(" ")[1];
         version = split_string[0].split(" ")[2];
         header_map = new HashMap<>();
-        for(int k = 1; k < split_string.length-1; k++){
+        for(int k = 1; k < split_string.length-2; k++){
             String[] header = split_string[k].split(": ", 2);
             header_map.put(header[0],header[1]);
         }
