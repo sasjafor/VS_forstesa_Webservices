@@ -7,9 +7,12 @@ import java.util.Map;
 
 public class HttpPayload {
 
-    public HttpPayload(BufferedReader in) throws IOException{
+    public HttpPayload(BufferedReader in) throws IOException, NullPointerException{
         StringBuilder builder = new StringBuilder();
         String line = in.readLine();
+        if (line == null) {
+            throw new NullPointerException();
+        }
         String[] first_line = line.split(" ");
 
         method = first_line[0];

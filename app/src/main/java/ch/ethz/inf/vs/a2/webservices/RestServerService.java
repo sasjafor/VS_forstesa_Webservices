@@ -1,38 +1,31 @@
 package ch.ethz.inf.vs.a2.webservices;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
-import android.widget.Toast;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
-import java.nio.channels.ServerSocketChannel;
-import java.util.LinkedList;
-import java.util.List;
+import java.net.URLDecoder;
 import java.util.Map;
-import java.util.Set;
-
-import static java.lang.Thread.interrupted;
 
 public class RestServerService extends Service {
 
@@ -73,39 +66,30 @@ public class RestServerService extends Service {
             }
 
         } catch (IOException ie){
-            /*Toast toast = new Toast(this);
-            toast.setText(R.string.bind_exception_text);
-            toast.setDuration(Toast.LENGTH_LONG);
-            toast.show();*/
+
         }
     }
 
     private void startConnectionThread(Socket conn_sock){
         try {
-            /*InputStream in = conn_sock.getInputStream();
-            //InputStreamReader isr = new InputStreamReader(in);
-            //BufferedReader reader = new BufferedReader(isr);
-            byte[] buffer = new byte[4096];
-            while(){
-                in.read()
-            }
-            String request = new String(buffer, "UTF-8");*/
-
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(conn_sock.getInputStream(), "UTF-8")
             );
-            //System.out.println("DEBUG: request=\n" + request);
 
             String response_version = "HTTP/1.1";
 
-            HttpPayload payload_obj = new HttpPayload(in);
+            String response_body;
+            String response_code;
+            try {
+                HttpPayload payload_obj = new HttpPayload(in);
+                String[] h = handleRequest(payload_obj);
+                response_body = h[0];
+                response_code = h[1];
+            } catch (NullPointerException npe) {
+                response_body = "";
+                response_code = "400 Bad Request";
+            }
 
-
-            String[] h = handleRequest(payload_obj);
-
-
-            String response_body = h[0];
-            String response_code = h[1];
 
             OutputStream out = conn_sock.getOutputStream();
             PrintWriter response = new PrintWriter(out);
@@ -119,8 +103,6 @@ public class RestServerService extends Service {
             response.write(resp);
 
             response.flush();
-            //in.close();
-            //out.close();
             conn_sock.close();
         } catch (IOException ie){
 
@@ -131,9 +113,6 @@ public class RestServerService extends Service {
         String[] res = new String[2];
         res[0] = "";
         res[1] = "400 Bad Request";
-        /*if(request.isEmpty()) {
-            return res;
-        }*/
 
         Map<String, String> headers = payload_obj.getHeaderMap();
 
@@ -169,7 +148,6 @@ public class RestServerService extends Service {
                 res = handleGET(uri);
                 break;
             case "POST":
-                //System.out.println("DEBUG: It's a POST request");
                 res = handlePOST(uri, body);
                 break;
             default:
@@ -213,22 +191,56 @@ public class RestServerService extends Service {
         res[1] = "400 Bad Request";
         switch (uri) {
             case "/actuators/actuator1.html":
-                //String[] params = body.split("&");
-                long duration;
-                //if (params.length >= 1) {
-                String dur = body.split("=")[1];
-                    //String pattern = params[1].split("=")[1];
-
+                if (body.startsWith("duration=")) {
+                    long duration;
+                    String dur = body.split("=")[1];
                     duration = Integer.parseInt(dur);
-                //} else {
-                //    return res;
-               // }
-                Vibrator vib = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                    Vibrator vib = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 
-                vib.vibrate(duration);
-                //vib.vibrate(VibrationEffect.createOneShot(duration,amplitude));
+                    vib.vibrate(duration);
 
-                res[1] = "200 OK";
+                    res[1] = "200 OK";
+                }
+                break;
+            case "/actuators/actuator2.html":
+
+                System.out.println("DEBUG: actuator2="+body);
+                if (body.startsWith("title=")){
+                    String[] split = body.split("&");
+                    String title = split[0].split("=")[1];
+                    String text = split[1].split("=")[1];
+                    String colour = split[2].split("=")[1];
+                    int col = Color.WHITE;
+                    switch (colour) {
+                        case "red":
+                            col = Color.RED;
+                            break;
+                        case "green":
+                            col = Color.GREEN;
+                            break;
+                        case "blue":
+                            col = Color.BLUE;
+                            break;
+                    }
+                    try {
+                        title = URLDecoder.decode(title, "UTF-8");
+                        text = URLDecoder.decode(text, "UTF-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        break;
+                    }
+                    Notification noti = new Notification.Builder(this)
+                            .setContentTitle(title)
+                            .setContentText(text)
+                            .setLights(col,1000,800)
+                            .setSmallIcon(R.drawable.notification_small)
+                            .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.notification_small))
+                            .build();
+                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    nm.notify(42,noti);
+
+                    res[1] = "200 OK";
+                }
+                break;
         }
         return res;
     }

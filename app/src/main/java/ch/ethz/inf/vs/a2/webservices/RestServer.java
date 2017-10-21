@@ -1,11 +1,7 @@
 package ch.ethz.inf.vs.a2.webservices;
 
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.res.Resources;
-import android.hardware.SensorManager;
-import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -37,16 +33,6 @@ public class RestServer extends AppCompatActivity {
         Enumeration<NetworkInterface> list = null;
         try {
             list = getNetworkInterfaces();
-            //System.out.println("DEBUG: network interfaces");
-
-                //System.out.println("\n"+h);
-                //Enumeration<InetAddress> h1 = h.getInetAddresses();
-                /*if(h1.hasMoreElements()) {
-                    System.out.println("\n"+h1.nextElement());
-                }*/
-
-            //ni = list.nextElement();
-            //ni = getByName("wlan0");
         } catch (SocketException se){
             Toast toast = Toast.makeText(this,R.string.socket_exception_text,Toast.LENGTH_LONG);
             toast.show();
@@ -59,9 +45,7 @@ public class RestServer extends AppCompatActivity {
             }
         }
 
-
-
-        ListView lv = (ListView) findViewById(R.id.interface_list);
+        lv = (ListView) findViewById(R.id.interface_list);
         ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, interfaces);
         lv.setAdapter(adapter);
         lv.setEnabled(true);
@@ -69,7 +53,6 @@ public class RestServer extends AppCompatActivity {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //NetworkInterface ni = null;
                 try {
                     ni = getByName(interfaces.get(position));
                 } catch (SocketException se) {
@@ -82,7 +65,8 @@ public class RestServer extends AppCompatActivity {
 
                 Resources res = getResources();
                 TextView text = (TextView) findViewById(R.id.network_information);
-                text.setText(res.getString(R.string.network_information,addr+":"+PORT));
+                server_info = res.getString(R.string.network_information,addr+":"+PORT);
+                text.setText(server_info);
 
                 InetSocketAddress sock_addr = new InetSocketAddress(addr, PORT);
                 intent_service.putExtra("sock_addr",sock_addr);
@@ -95,7 +79,9 @@ public class RestServer extends AppCompatActivity {
         if(tb.isChecked()){
             if (ni != null) {
                 System.out.println("DEBUG: Start server");
+                lv.setEnabled(false);
                 startService(intent_service);
+                service_running = true;
             } else {
                 Toast toast = Toast.makeText(this,R.string.no_interface_chosen,Toast.LENGTH_LONG);
                 toast.show();
@@ -103,15 +89,35 @@ public class RestServer extends AppCompatActivity {
             }
         } else {
             stopService(intent_service);
+            service_running = false;
+            TextView text = (TextView) findViewById(R.id.network_information);
+            text.setText(R.string.network_instruction);
+            lv.setEnabled(true);
         }
     }
 
-    /*private void setNi(NetworkInterface ni){
-        this.ni = ni;
-    }*/
+    @Override
+    public void onPause(){
+        super.onPause();
+    }
 
-    private Intent intent_service;
+    @Override
+    public void onResume(){
+        super.onResume();
+        ToggleButton tb = (ToggleButton) findViewById(R.id.btn_toggle_server);
+        if (service_running) {
+            tb.setChecked(true);
+            lv.setEnabled(false);
+            TextView text = (TextView) findViewById(R.id.network_information);
+            text.setText(server_info);
+        }
+    }
+
+    private static Intent intent_service;
     private NetworkInterface ni;
+    private static ListView lv;
+    private static boolean service_running;
+    private static String server_info;
 
     private int PORT = 8088;
 }
