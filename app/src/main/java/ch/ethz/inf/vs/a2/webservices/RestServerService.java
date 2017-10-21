@@ -11,6 +11,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
@@ -67,8 +68,8 @@ public class RestServerService extends Service {
             }
 
         } catch (IOException ie){
-            Toast toast = Toast.makeText(this,R.string.bind_exception_text,Toast.LENGTH_LONG);
-            toast.show();
+            //Toast toast = Toast.makeText(this,R.string.bind_exception_text,Toast.LENGTH_LONG);
+            //toast.show();
         }
     }
 
@@ -237,7 +238,6 @@ public class RestServerService extends Service {
                             .setLights(col,300,100)
                             .setPriority(Notification.PRIORITY_HIGH)
                             .setSmallIcon(R.drawable.notification_small)
-                            .setOngoing(true)
                             .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.notification_small))
                             .build();
                     NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
