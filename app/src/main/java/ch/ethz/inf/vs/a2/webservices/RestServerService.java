@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -66,7 +67,8 @@ public class RestServerService extends Service {
             }
 
         } catch (IOException ie){
-
+            Toast toast = Toast.makeText(this,R.string.bind_exception_text,Toast.LENGTH_LONG);
+            toast.show();
         }
     }
 
@@ -105,7 +107,8 @@ public class RestServerService extends Service {
             response.flush();
             conn_sock.close();
         } catch (IOException ie){
-
+            Toast toast = Toast.makeText(this,R.string.connection_failed,Toast.LENGTH_LONG);
+            toast.show();
         }
     }
 
@@ -124,9 +127,9 @@ public class RestServerService extends Service {
         System.out.println("DEBUG: uri=" + uri);
         System.out.println("DEBUG: headers");
         Object[] keys = headers.keySet().toArray();
-        for (int k = 0; k < headers.size(); k++){
+        /*for (int k = 0; k < headers.size(); k++){
             System.out.println("DEBUG: "+ keys[k] + "=" + headers.get(keys[k]));
-        }
+        }*/
         System.out.println("DEBUG: body=" + body);
 
         if (uri.startsWith("http://") || uri.matches("^//")) {
@@ -173,7 +176,7 @@ public class RestServerService extends Service {
         }
         SensorManager sens_man = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         SensorHelper sens_helper = new SensorHelper(sens_man);
-        double val = 0.0;
+        double val;
         switch (uri) {
             case "/sensors/sensor1.html":
                 val = sens_helper.getSensorValue(Sensor.TYPE_PRESSURE);

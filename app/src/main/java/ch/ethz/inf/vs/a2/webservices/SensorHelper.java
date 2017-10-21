@@ -1,7 +1,5 @@
 package ch.ethz.inf.vs.a2.webservices;
 
-import android.app.Activity;
-import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -19,7 +17,7 @@ public class SensorHelper implements SensorEventListener{
         try {
             wait();
         } catch (InterruptedException ie) {
-
+            //shouldn't get interrupted
         }
         return value;
     }

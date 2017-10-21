@@ -37,7 +37,7 @@ public class RestServer extends AppCompatActivity {
             Toast toast = Toast.makeText(this,R.string.socket_exception_text,Toast.LENGTH_LONG);
             toast.show();
         }
-        while(list.hasMoreElements()) {
+        while(list != null && list.hasMoreElements()) {
             NetworkInterface el = list.nextElement();
             if (el.getInetAddresses().hasMoreElements()) {
                 String h = el.getName();
@@ -115,9 +115,9 @@ public class RestServer extends AppCompatActivity {
 
     private static Intent intent_service;
     private NetworkInterface ni;
-    private static ListView lv;
+    private ListView lv;
     private static boolean service_running;
     private static String server_info;
 
-    private int PORT = 8088;
+    private final int PORT = 8088;
 }

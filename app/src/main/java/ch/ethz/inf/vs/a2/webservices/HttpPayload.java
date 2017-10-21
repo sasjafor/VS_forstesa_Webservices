@@ -8,7 +8,6 @@ import java.util.Map;
 public class HttpPayload {
 
     public HttpPayload(BufferedReader in) throws IOException, NullPointerException{
-        StringBuilder builder = new StringBuilder();
         String line = in.readLine();
         if (line == null) {
             throw new NullPointerException();
@@ -21,7 +20,7 @@ public class HttpPayload {
 
         header_map = new HashMap<>();
 
-        while (line != null) {
+        while (true) {
             line = in.readLine();
             if (line.equals("")) break;
             String[] header = line.split(": ", 2);
