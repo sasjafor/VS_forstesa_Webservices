@@ -13,7 +13,7 @@ public class SensorHelper implements SensorEventListener{
         this.sens_man = sens_man;
     }
 
-    public double getSensorValue(int sens_type) {
+    synchronized public double getSensorValue(int sens_type) {
         Sensor sens = sens_man.getDefaultSensor(sens_type);
         sens_man.registerListener(this,sens,SensorManager.SENSOR_DELAY_NORMAL);
         try {
@@ -27,7 +27,7 @@ public class SensorHelper implements SensorEventListener{
     private SensorManager sens_man;
 
     @Override
-    public void onSensorChanged(SensorEvent event) {
+    synchronized public void onSensorChanged(SensorEvent event) {
         value = event.values[0];
         notify();
     }

@@ -8,6 +8,8 @@ import android.hardware.SensorManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
@@ -28,6 +30,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static java.lang.Thread.interrupted;
 
@@ -79,54 +82,75 @@ public class RestServerService extends Service {
 
     private void startConnectionThread(Socket conn_sock){
         try {
-            InputStreamReader isr = new InputStreamReader(conn_sock.getInputStream());
-            BufferedReader reader = new BufferedReader(isr);
-            //InputStream request = conn_sock.getInputStream();
-            //byte b[] = new byte[request.available()];
-            //request.read(b);
-            String request = "";
-            String line;
-            while ((line = reader.readLine()) != null) {
-                request = request + line + "\n";
+            /*InputStream in = conn_sock.getInputStream();
+            //InputStreamReader isr = new InputStreamReader(in);
+            //BufferedReader reader = new BufferedReader(isr);
+            byte[] buffer = new byte[4096];
+            while(){
+                in.read()
             }
+            String request = new String(buffer, "UTF-8");*/
 
-            System.out.println("DEBUG: request=" + request);
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(conn_sock.getInputStream(), "UTF-8")
+            );
+            //System.out.println("DEBUG: request=\n" + request);
 
             String response_version = "HTTP/1.1";
 
-            String[] h = handleRequest(request);
+            HttpPayload payload_obj = new HttpPayload(in);
+
+
+            String[] h = handleRequest(payload_obj);
+
+
             String response_body = h[0];
             String response_code = h[1];
 
             OutputStream out = conn_sock.getOutputStream();
             PrintWriter response = new PrintWriter(out);
 
-            response.write(response_version + response_code + "\r\n"
+            String resp = response_version + " " + response_code + "\r\n"
                     + "\r\n"
-                    + response_body);
+                    + response_body;
+
+            System.out.println("DEBUG: response=\n" + resp);
+
+            response.write(resp);
 
             response.flush();
+            //in.close();
+            //out.close();
             conn_sock.close();
         } catch (IOException ie){
 
         }
     }
 
-    private String[] handleRequest(String request){
+    private String[] handleRequest(HttpPayload payload_obj){
         String[] res = new String[2];
         res[0] = "";
-        res[1] = "200 OK";
-        if(request.isEmpty()) {
-            res[1] = "400 Bad Request";
+        res[1] = "400 Bad Request";
+        /*if(request.isEmpty()) {
             return res;
-        }
-        HttpPayload payload_obj = new HttpPayload(request);
+        }*/
+
         Map<String, String> headers = payload_obj.getHeaderMap();
 
         String method = payload_obj.getMethod();
         String uri = payload_obj.getUri();
+        String body = payload_obj.getBody();
 
-        if (uri.matches("^http://") || uri.matches("^//")) {
+        System.out.println("DEBUG: method=" + method);
+        System.out.println("DEBUG: uri=" + uri);
+        System.out.println("DEBUG: headers");
+        Object[] keys = headers.keySet().toArray();
+        for (int k = 0; k < headers.size(); k++){
+            System.out.println("DEBUG: "+ keys[k] + "=" + headers.get(keys[k]));
+        }
+        System.out.println("DEBUG: body=" + body);
+
+        if (uri.startsWith("http://") || uri.matches("^//")) {
             uri = uri.substring(uri.indexOf('/') + 2);
             int index = uri.indexOf('/');
             if (index != -1) {
@@ -134,10 +158,9 @@ public class RestServerService extends Service {
             } else {
                 uri = "/";
             }
-        } else if (uri.matches("^/")) {
-
+        } else if (uri.startsWith("/")) {
+            System.out.println("DEBUG: URI matches /");
         } else {
-            res[1] = "400 Bad Request";
             return res;
         }
 
@@ -146,20 +169,13 @@ public class RestServerService extends Service {
                 res = handleGET(uri);
                 break;
             case "POST":
-                handlePOST();
-                break;
-            case "PUT":
-            case "DELETE":
-            case "HEAD":
-            case "OPTIONS":
-                res[1] = "501 Not Implemented";
+                //System.out.println("DEBUG: It's a POST request");
+                res = handlePOST(uri, body);
                 break;
             default:
-                res[1] = "400 Bad Request";
+                res[1] = "501 Not Implemented";
+                break;
         }
-
-        System.out.println("DEBUG: method=" + method);
-        System.out.println("DEBUG: uri=" + uri);
 
         return res;
     }
@@ -168,7 +184,10 @@ public class RestServerService extends Service {
     private String[] handleGET(String uri) {
         String[] res = new String[2];
         try {
-            res[0] = getStringFromFile("file:///android_asset/www" + uri);
+            String file_location = "www" + uri;
+            System.out.println("DEBUG: file_location="+file_location);
+            res[0] = getStringFromFile(file_location);
+            res[1] = "200 OK";
         } catch (IOException ie) {
             res[0] = "";
             res[1] = "404 Not Found";
@@ -178,30 +197,52 @@ public class RestServerService extends Service {
         SensorHelper sens_helper = new SensorHelper(sens_man);
         double val = 0.0;
         switch (uri) {
-            case "/sensor1.html":
+            case "/sensors/sensor1.html":
                 val = sens_helper.getSensorValue(Sensor.TYPE_PRESSURE);
-            case "/sensor2.html":
+                res[0] = res[0].replaceFirst("@@@pressure@@@", Double.toString(val));
+            case "/sensors/sensor2.html":
                 val = sens_helper.getSensorValue(Sensor.TYPE_LIGHT);
+                res[0] = res[0].replaceFirst("@@@brightness@@@", Double.toString(val));
         }
-        res[0].replaceFirst("@@@value1@@@", Double.toString(val));
         return res;
     }
 
-    private void handlePOST(){
+    private String[] handlePOST(String uri, String body){
+        String[] res = new String[2];
+        res[0] = "";
+        res[1] = "400 Bad Request";
+        switch (uri) {
+            case "/actuators/actuator1.html":
+                //String[] params = body.split("&");
+                long duration;
+                //if (params.length >= 1) {
+                String dur = body.split("=")[1];
+                    //String pattern = params[1].split("=")[1];
 
+                    duration = Integer.parseInt(dur);
+                //} else {
+                //    return res;
+               // }
+                Vibrator vib = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+
+                vib.vibrate(duration);
+                //vib.vibrate(VibrationEffect.createOneShot(duration,amplitude));
+
+                res[1] = "200 OK";
+        }
+        return res;
     }
 
-    private String getStringFromFile (String filePath) throws IOException{
-        File f = new File(filePath);
-        FileInputStream fi = new FileInputStream(f);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(fi));
+    private String getStringFromFile (String file) throws IOException{
+        InputStream in = getAssets().open(file);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         String res = "";
         String line;
         while ((line = reader.readLine()) != null) {
             res = res + line + "\n";
         }
         reader.close();
-        fi.close();
+        in.close();
         return res;
     }
 

@@ -7,9 +7,10 @@
     tools:context="ch.ethz.inf.vs.a2.webservices.RestServer"
     android:orientation="vertical">
 
-    <TextView android:id="@+id/text"
+    <TextView android:id="@+id/network_information"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="@string/network_instruction"/>
 
     <ToggleButton android:id="@+id/btn_toggle_server"
         android:layout_width="wrap_content"
@@ -17,5 +18,11 @@
         android:textOff="@string/rest_server_toggle_button_off_text"
         android:textOn="@string/rest_server_toggle_button_on_text"
         android:onClick="onClickToggle"/>
+
+    <ListView android:id="@+id/interface_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true">
+    </ListView>
 
 </LinearLayout>
