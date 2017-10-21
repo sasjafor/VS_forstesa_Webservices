@@ -234,8 +234,10 @@ public class RestServerService extends Service {
                     Notification noti = new Notification.Builder(this)
                             .setContentTitle(title)
                             .setContentText(text)
-                            .setLights(col,1000,800)
+                            .setLights(col,300,100)
+                            .setPriority(Notification.PRIORITY_HIGH)
                             .setSmallIcon(R.drawable.notification_small)
+                            .setOngoing(true)
                             .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.notification_small))
                             .build();
                     NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
