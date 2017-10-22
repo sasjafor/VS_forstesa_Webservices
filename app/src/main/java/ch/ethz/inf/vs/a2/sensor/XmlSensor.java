@@ -39,12 +39,10 @@ public class XmlSensor extends AbstractSensor {
                 "</S:Envelope>";
 
         // setting up the connection
-        URL url = new URL("http://vslab.inf.ethz.ch:8080/\n" +
-                "SunSPOTWebServices/SunSPOTWebservice");
+        URL url = new URL("http://vslab.inf.ethz.ch:8080/SunSPOTWebServices/SunSPOTWebservice");
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setRequestMethod("POST");
         urlConnection.setRequestProperty("Content-type", "text/xml;charset=UTF-8");
-        urlConnection.setRequestProperty("SOAPAction", "http://webservices.vslecture.vs.inf.ethz.ch/");
         urlConnection.setDoOutput(true);
 
         // retrieving values from Spot3
