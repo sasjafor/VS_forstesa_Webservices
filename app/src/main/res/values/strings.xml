@@ -13,4 +13,8 @@
     <string name="rest_server_toggle_button_on_text">REST Server Running</string>
     <string name="socket_exception_text">Couldn\'t get network interface information</string>
     <string name="bind_exception_text">Couldn\'t bind to address</string>
+    <string name="connection_failed">Failed to make connection</string>
+    <string name="network_information">Server is listening on %1$s</string>
+    <string name="network_instruction">Choose the interface in the list below</string>
+    <string name="no_interface_chosen">Please choose an interface before starting the server</string>
 </resources>

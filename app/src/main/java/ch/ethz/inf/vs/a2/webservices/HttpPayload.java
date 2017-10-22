@@ -1,21 +1,40 @@
 package ch.ethz.inf.vs.a2.webservices;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class HttpPayload {
 
-    public HttpPayload(String payload) {
-        String[] split_string = payload.split("\r\n");
-        method = split_string[0].split(" ")[0];
-        uri = split_string[0].split(" ")[1];
-        version = split_string[0].split(" ")[2];
+    public HttpPayload(BufferedReader in) throws IOException, NullPointerException{
+        String line = in.readLine();
+        if (line == null) {
+            throw new NullPointerException();
+        }
+        String[] first_line = line.split(" ");
+
+        method = first_line[0];
+        uri = first_line[1];
+        version = first_line[2];
+
         header_map = new HashMap<>();
-        for(int k = 1; k < split_string.length-1; k++){
-            String[] header = split_string[k].split(": ", 2);
+
+        while (true) {
+            line = in.readLine();
+            if (line.equals("")) break;
+            String[] header = line.split(": ", 2);
             header_map.put(header[0],header[1]);
         }
-        body = split_string[split_string.length-1];
+
+        if (header_map.containsKey("Content-Length")) {
+            int length = Integer.parseInt(header_map.get("Content-Length"));
+            char[] cbuf = new char[length];
+            in.read(cbuf);
+            body = String.valueOf(cbuf);
+        } else {
+            body = "";
+        }
     }
 
     public Map<String, String> getHeaderMap () {

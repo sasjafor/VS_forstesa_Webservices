@@ -1,28 +1,39 @@
 package ch.ethz.inf.vs.a2.webservices;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
-import android.os.Binder;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
-import java.nio.channels.ServerSocketChannel;
+import java.net.URLDecoder;
 import java.util.Map;
 
 public class RestServerService extends Service {
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId){
-        Thread t = new Thread("REST_SERVER_SERVICE(" + startId + ")") {
+        t = new Thread("REST_SERVER_SERVICE(" + startId + ")") {
             @Override
             public void run() {
                 startThis(intent);
@@ -43,35 +54,213 @@ public class RestServerService extends Service {
             sock.bind(sock_addr);
             System.out.println("DEBUG : Bound to socket");
 
-            while(true) {
-                Socket conn_sock = sock.accept();
-                InputStream request = conn_sock.getInputStream();
-                byte b[] = new byte[request.available()];
-                request.read(b);
-                String payload = new String(b, "UTF-8");
-                System.out.println("DEBUG: request="+payload);
+            while(!t.isInterrupted()) {
+                final Socket conn_sock = sock.accept();
+                System.out.println("DEBUG: accepted connection");
 
-                HttpPayload payload_obj = new HttpPayload(payload);
-                Map<String, String> headers = payload_obj.getHeaderMap();
-
-                String method = payload_obj.getMethod();
-                String uri = payload_obj.getUri();
-
-                System.out.println("DEBUG: method="+method);
-                System.out.println("DEBUG: uri="+uri);
-
-
-                OutputStream out = conn_sock.getOutputStream();
-
-
+                Thread t = new Thread(){
+                    @Override
+                    public void run(){
+                        startConnectionThread(conn_sock);
+                    }
+                };
+                t.start();
             }
 
         } catch (IOException ie){
-            Toast toast = new Toast(this);
-            toast.setText(R.string.bind_exception_text);
-            toast.setDuration(Toast.LENGTH_LONG);
+            //Toast toast = Toast.makeText(this,R.string.bind_exception_text,Toast.LENGTH_LONG);
+            //toast.show();
+        }
+    }
+
+    private void startConnectionThread(Socket conn_sock){
+        try {
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(conn_sock.getInputStream(), "UTF-8")
+            );
+
+            String response_version = "HTTP/1.1";
+
+            String response_body;
+            String response_code;
+            try {
+                HttpPayload payload_obj = new HttpPayload(in);
+                String[] h = handleRequest(payload_obj);
+                response_body = h[0];
+                response_code = h[1];
+            } catch (NullPointerException npe) {
+                response_body = "";
+                response_code = "400 Bad Request";
+            }
+
+
+            OutputStream out = conn_sock.getOutputStream();
+            PrintWriter response = new PrintWriter(out);
+
+            String resp = response_version + " " + response_code + "\r\n"
+                    + "\r\n"
+                    + response_body;
+
+            System.out.println("DEBUG: response=\n" + resp);
+
+            response.write(resp);
+
+            response.flush();
+            conn_sock.close();
+        } catch (IOException ie){
+            Toast toast = Toast.makeText(this,R.string.connection_failed,Toast.LENGTH_LONG);
             toast.show();
         }
+    }
+
+    private String[] handleRequest(HttpPayload payload_obj){
+        String[] res = new String[2];
+        res[0] = "";
+        res[1] = "400 Bad Request";
+
+        Map<String, String> headers = payload_obj.getHeaderMap();
+
+        String method = payload_obj.getMethod();
+        String uri = payload_obj.getUri();
+        String body = payload_obj.getBody();
+
+        System.out.println("DEBUG: method=" + method);
+        System.out.println("DEBUG: uri=" + uri);
+        System.out.println("DEBUG: headers");
+        Object[] keys = headers.keySet().toArray();
+        /*for (int k = 0; k < headers.size(); k++){
+            System.out.println("DEBUG: "+ keys[k] + "=" + headers.get(keys[k]));
+        }*/
+        System.out.println("DEBUG: body=" + body);
+
+        if (uri.startsWith("http://") || uri.matches("^//")) {
+            uri = uri.substring(uri.indexOf('/') + 2);
+            int index = uri.indexOf('/');
+            if (index != -1) {
+                uri = uri.substring(index);
+            } else {
+                uri = "/";
+            }
+        } else if (uri.startsWith("/")) {
+            System.out.println("DEBUG: URI matches /");
+        } else {
+            return res;
+        }
+
+        switch (method) {
+            case "GET":
+                res = handleGET(uri);
+                break;
+            case "POST":
+                res = handlePOST(uri, body);
+                break;
+            default:
+                res[1] = "501 Not Implemented";
+                break;
+        }
+
+        return res;
+    }
+
+    //returns the response_body and the response_code
+    private String[] handleGET(String uri) {
+        String[] res = new String[2];
+        try {
+            String file_location = "www" + uri;
+            System.out.println("DEBUG: file_location="+file_location);
+            res[0] = getStringFromFile(file_location);
+            res[1] = "200 OK";
+        } catch (IOException ie) {
+            res[0] = "";
+            res[1] = "404 Not Found";
+            return res;
+        }
+        SensorManager sens_man = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        SensorHelper sens_helper = new SensorHelper(sens_man);
+        double val;
+        switch (uri) {
+            case "/sensors/sensor1.html":
+                val = sens_helper.getSensorValue(Sensor.TYPE_PRESSURE);
+                res[0] = res[0].replaceFirst("@@@pressure@@@", Double.toString(val));
+            case "/sensors/sensor2.html":
+                val = sens_helper.getSensorValue(Sensor.TYPE_LIGHT);
+                res[0] = res[0].replaceFirst("@@@brightness@@@", Double.toString(val));
+        }
+        return res;
+    }
+
+    private String[] handlePOST(String uri, String body){
+        String[] res = new String[2];
+        res[0] = "";
+        res[1] = "400 Bad Request";
+        switch (uri) {
+            case "/actuators/actuator1.html":
+                if (body.startsWith("duration=")) {
+                    long duration;
+                    String dur = body.split("=")[1];
+                    duration = Integer.parseInt(dur);
+                    Vibrator vib = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+
+                    vib.vibrate(duration);
+
+                    res[1] = "200 OK";
+                }
+                break;
+            case "/actuators/actuator2.html":
+
+                System.out.println("DEBUG: actuator2="+body);
+                if (body.startsWith("title=")){
+                    String[] split = body.split("&");
+                    String title = split[0].split("=")[1];
+                    String text = split[1].split("=")[1];
+                    String colour = split[2].split("=")[1];
+                    int col = Color.WHITE;
+                    switch (colour) {
+                        case "red":
+                            col = Color.RED;
+                            break;
+                        case "green":
+                            col = Color.GREEN;
+                            break;
+                        case "blue":
+                            col = Color.BLUE;
+                            break;
+                    }
+                    try {
+                        title = URLDecoder.decode(title, "UTF-8");
+                        text = URLDecoder.decode(text, "UTF-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        break;
+                    }
+                    Notification noti = new Notification.Builder(this)
+                            .setContentTitle(title)
+                            .setContentText(text)
+                            .setLights(col,300,100)
+                            .setPriority(Notification.PRIORITY_HIGH)
+                            .setSmallIcon(R.drawable.notification_small)
+                            .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.notification_small))
+                            .build();
+                    NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    nm.notify(42,noti);
+
+                    res[1] = "200 OK";
+                }
+                break;
+        }
+        return res;
+    }
+
+    private String getStringFromFile (String file) throws IOException{
+        InputStream in = getAssets().open(file);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        String res = "";
+        String line;
+        while ((line = reader.readLine()) != null) {
+            res = res + line + "\n";
+        }
+        reader.close();
+        in.close();
+        return res;
     }
 
     @Override
@@ -81,7 +270,6 @@ public class RestServerService extends Service {
         } catch (IOException ie){
             //do nothing for now
         }
-
     }
 
     @Override
@@ -91,6 +279,7 @@ public class RestServerService extends Service {
         } catch (IOException ie) {
             //do nothing
         }
+        t.interrupt();
     }
 
     @Nullable
@@ -99,6 +288,7 @@ public class RestServerService extends Service {
         return null;
     }
 
+    private Thread t;
     private ServerSocket sock;
     private InetSocketAddress sock_addr;
 }
