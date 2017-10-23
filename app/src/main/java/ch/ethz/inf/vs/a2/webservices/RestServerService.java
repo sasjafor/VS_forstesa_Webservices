@@ -26,7 +26,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
-import java.util.Map;
 
 public class RestServerService extends Service {
 
@@ -47,15 +46,12 @@ public class RestServerService extends Service {
         Bundle extras = intent.getExtras();
         if (extras != null){
             sock_addr = (InetSocketAddress) extras.get("sock_addr");
-            //System.out.println("DEBUG: sock_addr"+sock_addr);
         }
         try {
             sock.bind(sock_addr);
-            System.out.println("DEBUG : Bound to socket");
 
             while(!t.isInterrupted()) {
                 final Socket conn_sock = sock.accept();
-                //System.out.println("DEBUG: accepted connection");
 
                 Thread t = new Thread(){
                     @Override
@@ -67,8 +63,7 @@ public class RestServerService extends Service {
             }
 
         } catch (IOException ie){
-            //Toast toast = Toast.makeText(this,R.string.bind_exception_text,Toast.LENGTH_LONG);
-            //toast.show();
+            System.out.println("DEBUG: failed to bind socket to address");
         }
     }
 
@@ -85,8 +80,6 @@ public class RestServerService extends Service {
             String response_headers = "";
             try {
                 HttpPayload payload_obj = new HttpPayload(in);
-                System.out.println("DEBUG: method="+payload_obj.getMethod());
-                System.out.println("DEBUG: uri="+payload_obj.getUri());
                 String[] h = handleRequest(payload_obj);
                 response_body = h[0];
                 response_code = h[1];
@@ -107,8 +100,6 @@ public class RestServerService extends Service {
                     + "\r\n"
                     + response_body;
 
-            System.out.println("DEBUG: response=\n" + resp);
-
             response.write(resp);
 
             response.flush();
@@ -124,20 +115,9 @@ public class RestServerService extends Service {
         res[0] = "";
         res[1] = "400 Bad Request";
 
-        //Map<String, String> headers = payload_obj.getHeaderMap();
-
         String method = payload_obj.getMethod();
         String uri = payload_obj.getUri();
         String body = payload_obj.getBody();
-
-        //System.out.println("DEBUG: method=" + method);
-        //System.out.println("DEBUG: uri=" + uri);
-        //System.out.println("DEBUG: headers");
-        //Object[] keys = headers.keySet().toArray();
-        /*for (int k = 0; k < headers.size(); k++){
-            System.out.println("DEBUG: "+ keys[k] + "=" + headers.get(keys[k]));
-        }*/
-        //System.out.println("DEBUG: body=" + body);
 
         if (uri.startsWith("http://") || uri.matches("^//")) {
             uri = uri.substring(uri.indexOf('/') + 2);
@@ -148,7 +128,7 @@ public class RestServerService extends Service {
                 uri = "/";
             }
         } else if (uri.startsWith("/")) {
-            //System.out.println("DEBUG: URI matches /");
+            //uri matches '/', do nothing and continue
         } else {
             return res;
         }
@@ -178,7 +158,6 @@ public class RestServerService extends Service {
         String[] res = new String[2];
         try {
             String file_location = "www" + uri;
-            System.out.println("DEBUG: file_location="+file_location);
             res[0] = getStringFromFile(file_location);
             res[1] = "200 OK";
         } catch (IOException ie) {
@@ -218,8 +197,6 @@ public class RestServerService extends Service {
                 }
                 break;
             case "/actuators/actuator2.html":
-
-                System.out.println("DEBUG: actuator2="+body);
                 if (body.startsWith("title=")){
                     String title = "", text = "";
 

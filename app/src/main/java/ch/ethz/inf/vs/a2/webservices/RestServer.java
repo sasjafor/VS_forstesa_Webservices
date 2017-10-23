@@ -12,7 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -67,7 +66,6 @@ public class RestServer extends AppCompatActivity {
                 InetAddress addr = addresses.nextElement();
                 while (addr instanceof Inet6Address && addresses.hasMoreElements()) {
                     addr = addresses.nextElement();
-                    System.out.println("DEBUG: address="+addr);
                 }
                 if (addr instanceof Inet6Address){
                     address = "["+addr.getHostAddress().substring(0,addr.toString().indexOf('%'))+"]";
@@ -91,7 +89,6 @@ public class RestServer extends AppCompatActivity {
         ToggleButton tb = (ToggleButton) v;
         if(tb.isChecked()){
             if (ni != null) {
-                System.out.println("DEBUG: Start server on " + ni);
                 lv.setEnabled(false);
                 Resources res = getResources();
                 TextView text = (TextView) findViewById(R.id.network_information);
