@@ -82,6 +82,7 @@ public class RestServerService extends Service {
 
             String response_body;
             String response_code;
+            String response_headers = "";
             try {
                 HttpPayload payload_obj = new HttpPayload(in);
                 System.out.println("DEBUG: method="+payload_obj.getMethod());
@@ -94,10 +95,15 @@ public class RestServerService extends Service {
                 response_code = "400 Bad Request";
             }
 
+            if (response_code.equals("302 Found")) {
+                response_headers = "Location: http://" + sock_addr.getAddress().getHostAddress() + ":8088/index.html";
+            }
+
             OutputStream out = conn_sock.getOutputStream();
             PrintWriter response = new PrintWriter(out);
 
             String resp = response_version + " " + response_code + "\r\n"
+                    + response_headers
                     + "\r\n"
                     + response_body;
 
@@ -262,7 +268,7 @@ public class RestServerService extends Service {
                 }
                 break;
         }
-        return res;
+        return handleGET(uri);
     }
 
     private String getStringFromFile (String file) throws IOException{
