@@ -12,6 +12,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
@@ -61,11 +63,22 @@ public class RestServer extends AppCompatActivity {
                     return;
                 }
                 intent_service = new Intent(RestServer.this, RestServerService.class);
-                InetAddress addr = ni.getInetAddresses().nextElement();
+                Enumeration<InetAddress> addresses = ni.getInetAddresses();
+                InetAddress addr = addresses.nextElement();
+                while (addr instanceof Inet6Address && addresses.hasMoreElements()) {
+                    addr = addresses.nextElement();
+                    System.out.println("DEBUG: address="+addr);
+                }
+                if (addr instanceof Inet6Address){
+                    address = "["+addr.getHostAddress().substring(0,addr.toString().indexOf('%'))+"]";
+                } else {
+                    address = addr.getHostAddress();
+                }
+
 
                 Resources res = getResources();
                 TextView text = (TextView) findViewById(R.id.network_information);
-                server_info = res.getString(R.string.network_information,addr+":"+PORT);
+                server_info = res.getString(R.string.network_information_down,address+":"+PORT);
                 text.setText(server_info);
 
                 InetSocketAddress sock_addr = new InetSocketAddress(addr, PORT);
@@ -78,8 +91,12 @@ public class RestServer extends AppCompatActivity {
         ToggleButton tb = (ToggleButton) v;
         if(tb.isChecked()){
             if (ni != null) {
-                System.out.println("DEBUG: Start server");
+                System.out.println("DEBUG: Start server on " + ni);
                 lv.setEnabled(false);
+                Resources res = getResources();
+                TextView text = (TextView) findViewById(R.id.network_information);
+                server_info = res.getString(R.string.network_information_up,address+":"+PORT);
+                text.setText(server_info);
                 startService(intent_service);
                 service_running = true;
             } else {
@@ -90,15 +107,12 @@ public class RestServer extends AppCompatActivity {
         } else {
             stopService(intent_service);
             service_running = false;
+            Resources res = getResources();
             TextView text = (TextView) findViewById(R.id.network_information);
-            text.setText(R.string.network_instruction);
+            server_info = res.getString(R.string.network_information_down,address+":"+PORT);
+            text.setText(server_info);
             lv.setEnabled(true);
         }
-    }
-
-    @Override
-    public void onPause(){
-        super.onPause();
     }
 
     @Override
@@ -115,6 +129,7 @@ public class RestServer extends AppCompatActivity {
 
     private static Intent intent_service;
     private NetworkInterface ni;
+    private String address;
     private ListView lv;
     private static boolean service_running;
     private static String server_info;

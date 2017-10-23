@@ -11,7 +11,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
@@ -48,7 +47,7 @@ public class RestServerService extends Service {
         Bundle extras = intent.getExtras();
         if (extras != null){
             sock_addr = (InetSocketAddress) extras.get("sock_addr");
-            System.out.println("DEBUG: sock_addr"+sock_addr);
+            //System.out.println("DEBUG: sock_addr"+sock_addr);
         }
         try {
             sock.bind(sock_addr);
@@ -56,7 +55,7 @@ public class RestServerService extends Service {
 
             while(!t.isInterrupted()) {
                 final Socket conn_sock = sock.accept();
-                System.out.println("DEBUG: accepted connection");
+                //System.out.println("DEBUG: accepted connection");
 
                 Thread t = new Thread(){
                     @Override
@@ -85,6 +84,8 @@ public class RestServerService extends Service {
             String response_code;
             try {
                 HttpPayload payload_obj = new HttpPayload(in);
+                System.out.println("DEBUG: method="+payload_obj.getMethod());
+                System.out.println("DEBUG: uri="+payload_obj.getUri());
                 String[] h = handleRequest(payload_obj);
                 response_body = h[0];
                 response_code = h[1];
@@ -92,7 +93,6 @@ public class RestServerService extends Service {
                 response_body = "";
                 response_code = "400 Bad Request";
             }
-
 
             OutputStream out = conn_sock.getOutputStream();
             PrintWriter response = new PrintWriter(out);
@@ -118,20 +118,20 @@ public class RestServerService extends Service {
         res[0] = "";
         res[1] = "400 Bad Request";
 
-        Map<String, String> headers = payload_obj.getHeaderMap();
+        //Map<String, String> headers = payload_obj.getHeaderMap();
 
         String method = payload_obj.getMethod();
         String uri = payload_obj.getUri();
         String body = payload_obj.getBody();
 
-        System.out.println("DEBUG: method=" + method);
-        System.out.println("DEBUG: uri=" + uri);
-        System.out.println("DEBUG: headers");
-        Object[] keys = headers.keySet().toArray();
+        //System.out.println("DEBUG: method=" + method);
+        //System.out.println("DEBUG: uri=" + uri);
+        //System.out.println("DEBUG: headers");
+        //Object[] keys = headers.keySet().toArray();
         /*for (int k = 0; k < headers.size(); k++){
             System.out.println("DEBUG: "+ keys[k] + "=" + headers.get(keys[k]));
         }*/
-        System.out.println("DEBUG: body=" + body);
+        //System.out.println("DEBUG: body=" + body);
 
         if (uri.startsWith("http://") || uri.matches("^//")) {
             uri = uri.substring(uri.indexOf('/') + 2);
@@ -142,8 +142,13 @@ public class RestServerService extends Service {
                 uri = "/";
             }
         } else if (uri.startsWith("/")) {
-            System.out.println("DEBUG: URI matches /");
+            //System.out.println("DEBUG: URI matches /");
         } else {
+            return res;
+        }
+
+        if (uri.equals("/")) {
+            res[1] = "302 Found";
             return res;
         }
 
@@ -210,20 +215,29 @@ public class RestServerService extends Service {
 
                 System.out.println("DEBUG: actuator2="+body);
                 if (body.startsWith("title=")){
+                    String title = "", text = "";
+
                     String[] split = body.split("&");
-                    String title = split[0].split("=")[1];
-                    String text = split[1].split("=")[1];
+                    String[] t1 = split[0].split("=");
+                    String[] t2 = split[1].split("=");
+
+                    if (t1.length == 2) {
+                        title = t1[1];
+                    }
+                    if (t2.length == 2) {
+                        text = split[1].split("=")[1];
+                    }
                     String colour = split[2].split("=")[1];
                     int col = Color.WHITE;
                     switch (colour) {
                         case "red":
-                            col = Color.RED;
+                            col = 0xFFFF0000;
                             break;
                         case "green":
-                            col = Color.GREEN;
+                            col = 0xFF00FF00;
                             break;
                         case "blue":
-                            col = Color.BLUE;
+                            col = 0xFF0000FF;
                             break;
                     }
                     try {
@@ -241,6 +255,7 @@ public class RestServerService extends Service {
                             .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.notification_small))
                             .build();
                     NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    noti.flags = Notification.FLAG_SHOW_LIGHTS;
                     nm.notify(42,noti);
 
                     res[1] = "200 OK";

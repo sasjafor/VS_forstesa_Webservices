@@ -19,9 +19,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".RestClient" />
-        <activity android:name=".SoapClient" />
-        <activity android:name=".RestServer" />
+        <activity
+            android:name=".RestClient"
+            android:configChanges="orientation|keyboardHidden|screenSize"/>
+        <activity
+            android:name=".SoapClient"
+            android:configChanges="orientation|keyboardHidden|screenSize"/>
+        <activity
+            android:name=".RestServer"
+            android:configChanges="orientation|keyboardHidden|screenSize"/>
 
         <service android:name=".RestServerService" />
     </application>

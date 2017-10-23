@@ -3,34 +3,36 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ch.ethz.inf.vs.a2.webservices.MainActivity">
+    tools:context="ch.ethz.inf.vs.a2.webservices.MainActivity"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/main_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/nethz_name"
+        android:textSize="40sp"/>
 
     <Button
         android:id="@+id/button_rest_client"
-        android:layout_width="88dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/button1_text"
-        android:onClick="onClickRestClient"
-        tools:layout_editor_absoluteY="0dp"
-        tools:layout_editor_absoluteX="8dp" />
+        android:onClick="onClickRestClient"/>
 
     <Button
         android:id="@+id/button_soap_client"
-        android:layout_width="88dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/button2_text"
-        android:onClick="onClickSoapClient"
-        tools:layout_editor_absoluteY="0dp"
-        tools:layout_editor_absoluteX="8dp" />
+        android:onClick="onClickSoapClient"/>
 
     <Button
         android:id="@+id/button_rest_server"
-        android:layout_width="88dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/button3_text"
-        android:onClick="onClickRestServer"
-        tools:layout_editor_absoluteY="0dp"
-        tools:layout_editor_absoluteX="8dp" />
+        android:onClick="onClickRestServer"/>
 
 
 </LinearLayout>
