@@ -10,7 +10,7 @@ public class SoapSensor extends AbstractSensor {
     public String executeRequest() throws Exception {
         // throws IOException, XmlPullParserException
 
-        String response = "";
+        String response;
 
         final String URL = "http://vslab.inf.ethz.ch:8080/SunSPOTWebServices/SunSPOTWebservice?WSDL";
         final String NameSpace = "http://webservices.vslecture.vs.inf.ethz.ch/";

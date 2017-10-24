@@ -8,8 +8,7 @@
 
     <TextView android:id="@+id/network_information"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/network_instruction"/>
+        android:layout_height="wrap_content"/>
 
     <ToggleButton android:id="@+id/btn_toggle_server"
         android:layout_width="wrap_content"

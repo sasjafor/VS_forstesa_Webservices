@@ -30,6 +30,8 @@ public class RestServer extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rest_server);
 
+        Resources res = getResources();
+        server_info = res.getString(R.string.network_instruction);
         final ArrayList<String> interfaces = new ArrayList<>();
         Enumeration<NetworkInterface> list = null;
         try {
@@ -119,13 +121,13 @@ public class RestServer extends AppCompatActivity {
         if (service_running) {
             tb.setChecked(true);
             lv.setEnabled(false);
-            TextView text = (TextView) findViewById(R.id.network_information);
-            text.setText(server_info);
         }
+        TextView text = (TextView) findViewById(R.id.network_information);
+        text.setText(server_info);
     }
 
     private static Intent intent_service;
-    private NetworkInterface ni;
+    private static NetworkInterface ni;
     private static String address;
     private ListView lv;
     private static boolean service_running;

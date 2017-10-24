@@ -147,7 +147,7 @@ public class HttpRawRequestTests{
 				break;
 			}
 		}
-		Assert.assertTrue("Header field \"Accept\" expected, but not found.", found);;
+		Assert.assertTrue("Header field \"Accept\" expected, but not found.", found);
 	}
 	
 	private String createRequest(){

@@ -60,8 +60,7 @@ public class RawHttpSensor extends AbstractSensor {
         Pattern pattern = Pattern.compile("<span class=\"getterValue\">([0-9.]+)</span>");
         Matcher matcher = pattern.matcher(response);
         matcher.find();
-        Double temp = Double.parseDouble(matcher.group(1));
-        return temp;
+        return Double.parseDouble(matcher.group(1));
 
     }
 }

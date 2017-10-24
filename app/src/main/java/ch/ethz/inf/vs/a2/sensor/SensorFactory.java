@@ -30,6 +30,6 @@ public abstract class SensorFactory {
 	}
 
 	public enum Type {
-		RAW_HTTP, TEXT, JSON, XML, SOAP;
+		RAW_HTTP, TEXT, JSON, XML, SOAP
 	}
 }

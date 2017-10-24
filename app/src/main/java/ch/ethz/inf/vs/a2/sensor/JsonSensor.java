@@ -40,8 +40,7 @@ public class JsonSensor extends AbstractSensor {
 
         try {
             JSONObject obj = new JSONObject(response);
-            double temp = Double.parseDouble(obj.getString("value"));
-            return temp;
+            return Double.parseDouble(obj.getString("value"));
         } catch (Exception e) {
             System.out.println("Error: " + e);
         }

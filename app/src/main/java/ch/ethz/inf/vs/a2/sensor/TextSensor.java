@@ -41,7 +41,6 @@ public class TextSensor extends AbstractSensor {
         Pattern pattern = Pattern.compile("([0-9.]+)");
         Matcher matcher = pattern.matcher(response);
         matcher.find();
-        Double temp = Double.parseDouble(matcher.group(1));
-        return temp;
+        return Double.parseDouble(matcher.group(1));
     }
 }
