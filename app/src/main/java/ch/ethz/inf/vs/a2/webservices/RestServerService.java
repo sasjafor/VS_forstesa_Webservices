@@ -26,6 +26,8 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RestServerService extends Service {
 
@@ -83,14 +85,24 @@ public class RestServerService extends Service {
                 String[] h = handleRequest(payload_obj);
                 response_body = h[0];
                 response_code = h[1];
+
+                if (response_code.equals("302 Found")) {
+                    Map<String, String> headers = payload_obj.getHeaderMap();
+                    int p = sock_addr.getPort();
+                    if (!headers.isEmpty()) {
+                        String host = headers.get("Host");
+                        if (host != null) {
+                            p = Integer.parseInt(host.split(":")[1]);
+                        }
+                    }
+                    response_headers = "Location: http://" + sock_addr.getAddress().getHostAddress() + ":" + p + "/index.html";
+                }
             } catch (NullPointerException npe) {
                 response_body = "";
                 response_code = "400 Bad Request";
             }
 
-            if (response_code.equals("302 Found")) {
-                response_headers = "Location: http://" + sock_addr.getAddress().getHostAddress() + ":8088/index.html";
-            }
+
 
             OutputStream out = conn_sock.getOutputStream();
             PrintWriter response = new PrintWriter(out);
