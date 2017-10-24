@@ -4,6 +4,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
+
+import ch.ethz.inf.vs.a2.sensor.SensorFactory;
 import ch.ethz.inf.vs.a2.sensor.SensorListener;
 import ch.ethz.inf.vs.a2.sensor.SoapSensor;
 import ch.ethz.inf.vs.a2.sensor.XmlSensor;
@@ -18,10 +20,10 @@ public class SoapClient extends AppCompatActivity implements SensorListener {
         temperature = (TextView) findViewById(R.id.soapTemperature);
         temperature.setText(getString(R.string.temperature,0.0));
 
-        xmlSensor = new XmlSensor();
+        xmlSensor = (XmlSensor) SensorFactory.getInstance(SensorFactory.Type.XML);
         xmlSensor.registerListener(this);
 
-        soapSensor = new SoapSensor();
+        soapSensor = (SoapSensor) SensorFactory.getInstance(SensorFactory.Type.SOAP);
         soapSensor.registerListener(this);
     }
 

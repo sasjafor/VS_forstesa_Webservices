@@ -6,7 +6,6 @@ import ch.ethz.inf.vs.a2.sensor.RawHttpSensor;
 import ch.ethz.inf.vs.a2.sensor.SoapSensor;
 import ch.ethz.inf.vs.a2.sensor.XmlSensor;
 
-
 public abstract class SensorFactory {
 	public static Sensor getInstance(Type type) {
 		switch (type) {

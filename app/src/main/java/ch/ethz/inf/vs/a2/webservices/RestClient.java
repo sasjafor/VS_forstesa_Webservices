@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import ch.ethz.inf.vs.a2.sensor.JsonSensor;
 import ch.ethz.inf.vs.a2.sensor.RawHttpSensor;
+import ch.ethz.inf.vs.a2.sensor.SensorFactory;
 import ch.ethz.inf.vs.a2.sensor.SensorListener;
 import ch.ethz.inf.vs.a2.sensor.TextSensor;
 
@@ -18,15 +19,13 @@ public class RestClient extends AppCompatActivity implements SensorListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rest_client);
 
-        //TODO: replace constructors with factory constructors when project finished
-
         Resources res = getResources();
         temp_val = (TextView) findViewById(R.id.temperature);
         temp_val.setText(res.getString(R.string.temperature,0.0));
 
-        raw_sensor = new RawHttpSensor();
-        text_sensor = new TextSensor();
-        json_sensor = new JsonSensor();
+        raw_sensor = (RawHttpSensor) SensorFactory.getInstance(SensorFactory.Type.RAW_HTTP);
+        text_sensor = (TextSensor) SensorFactory.getInstance(SensorFactory.Type.TEXT);
+        json_sensor = (JsonSensor) SensorFactory.getInstance(SensorFactory.Type.JSON);
 
         raw_sensor.registerListener(this);
         text_sensor.registerListener(this);

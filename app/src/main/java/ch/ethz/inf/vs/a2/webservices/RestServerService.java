@@ -26,7 +26,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
-import java.util.HashMap;
 import java.util.Map;
 
 public class RestServerService extends Service {
@@ -65,7 +64,7 @@ public class RestServerService extends Service {
             }
 
         } catch (IOException ie){
-            System.out.println("DEBUG: failed to bind socket to address");
+
         }
     }
 
