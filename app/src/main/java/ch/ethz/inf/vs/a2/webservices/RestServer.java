@@ -126,10 +126,10 @@ public class RestServer extends AppCompatActivity {
 
     private static Intent intent_service;
     private NetworkInterface ni;
-    private String address;
+    private static String address;
     private ListView lv;
     private static boolean service_running;
     private static String server_info;
 
-    private final int PORT = 8088;
+    private static final int PORT = 8088;
 }
