@@ -191,9 +191,6 @@ public class RestServerService extends Service {
     }
 
     private String[] handlePOST(String uri, String body){
-        String[] res = new String[2];
-        res[0] = "";
-        res[1] = "400 Bad Request";
         switch (uri) {
             case "/actuators/actuator1.html":
                 if (body.startsWith("duration=")) {
@@ -203,8 +200,6 @@ public class RestServerService extends Service {
                     Vibrator vib = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 
                     vib.vibrate(duration);
-
-                    res[1] = "200 OK";
                 }
                 break;
             case "/actuators/actuator2.html":
@@ -219,40 +214,23 @@ public class RestServerService extends Service {
                         title = t1[1];
                     }
                     if (t2.length == 2) {
-                        text = split[1].split("=")[1];
+                        text = t2[1];
                     }
-                    String colour = split[2].split("=")[1];
-                    int col = Color.WHITE;
-                    switch (colour) {
-                        case "red":
-                            col = 0xFFFF0000;
-                            break;
-                        case "green":
-                            col = 0xFF00FF00;
-                            break;
-                        case "blue":
-                            col = 0xFF0000FF;
-                            break;
-                    }
+
                     try {
                         title = URLDecoder.decode(title, "UTF-8");
                         text = URLDecoder.decode(text, "UTF-8");
                     } catch (UnsupportedEncodingException uee) {
                         break;
                     }
+
                     Notification noti = new Notification.Builder(this)
                             .setContentTitle(title)
                             .setContentText(text)
-                            .setLights(col,300,100)
-                            .setPriority(Notification.PRIORITY_HIGH)
                             .setSmallIcon(R.drawable.notification_small)
-                            .setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.notification_small))
                             .build();
                     NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    noti.flags = Notification.FLAG_SHOW_LIGHTS;
                     nm.notify(42,noti);
-
-                    res[1] = "200 OK";
                 }
                 break;
         }
